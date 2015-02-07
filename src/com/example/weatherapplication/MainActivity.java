@@ -67,12 +67,13 @@ public class MainActivity extends ActionBarActivity implements
 	TextView humidity = null;
 	TextView cloudPercent = null;
 	TextView windSpeed = null;
-	TextView city = null;
+	 TextView city = null;
 	TextView state_country = null;
 	TextView date = null;
 	AutoCompleteTextView autoCompView = null;
 	ImageView descriptionIcon = null;
 	ImageView locationIcon = null;
+	ImageView clearIcon=null;
 	TextView minMaxtemp = null;
 	List<Report> forecastReport = new ArrayList<Report>();
 	List<Report> nearbyReport = new ArrayList<Report>();
@@ -127,6 +128,7 @@ public class MainActivity extends ActionBarActivity implements
 		date = (TextView) findViewById(R.id.time);
 		locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 		locationIcon = (ImageView) findViewById(R.id.locationIcon);
+		clearIcon = (ImageView)findViewById(R.id.clearIcon);
 		tempDetails.setVisibility(View.GONE);
 		forecastLayout.setVisibility(View.GONE);
 		nearbyLayout.setVisibility(View.GONE);
@@ -185,6 +187,15 @@ public class MainActivity extends ActionBarActivity implements
 
 		setContentView(R.layout.weather_main);
 		initializeAll();
+		
+		clearIcon.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+			autoCompView.setText("");
+
+			}
+		});
 
 		locationIcon.setOnClickListener(new View.OnClickListener() {
 
@@ -202,7 +213,7 @@ public class MainActivity extends ActionBarActivity implements
 			@Override
 			public void onClick(View arg0) {
 				int minTemp = 0, maxTemp = 0, temp1 = 0;
-				;
+			
 
 				if (temperatureIcon.getContentDescription().equals("Celcius")) {
 				
@@ -386,7 +397,7 @@ public class MainActivity extends ActionBarActivity implements
 
 			LocationListener locationListener = new MyLocationListener();
 			locationManager.requestLocationUpdates(
-					LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
+					LocationManager.GPS_PROVIDER, 0,0, locationListener);
 		}
 
 	}
@@ -415,10 +426,121 @@ public class MainActivity extends ActionBarActivity implements
 
 		private void setNearbyView() {
 
-			Report report1 = nearbyReport.get(1);
-			Report report2 = nearbyReport.get(2);
-			Report report3 = nearbyReport.get(3);
-			Report report4 = nearbyReport.get(4);
+			final Report report1 = nearbyReport.get(1);
+			final Report report2 = nearbyReport.get(2);
+			final Report report3 = nearbyReport.get(3);
+			final Report report4 = nearbyReport.get(4);
+			
+			LinearLayout nearby1=(LinearLayout)findViewById(R.id.nearby1);
+			LinearLayout nearby2=(LinearLayout)findViewById(R.id.nearby2);
+			LinearLayout nearby3=(LinearLayout)findViewById(R.id.nearby3);
+			LinearLayout nearby4=(LinearLayout)findViewById(R.id.nearby4);
+			
+			nearby1.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				WeatherTask task = new WeatherTask();
+				task.setLatitude(report1.getLatitude());
+				task.setLongitude(report1.getLongitude());
+				task.setFirstSearch(true);
+				task.execute();
+
+				ForecastTask task1 = new ForecastTask();
+				task1.setLatitude(report1.getLatitude());
+				task1.setLongitude(report1.getLongitude());
+				task1.setIsFirstSearch(true);
+				task1.execute();
+
+				WeatherNearbyTask task2 = new WeatherNearbyTask();
+				task2.setLatitude(report1.getLatitude());
+				task2.setLongitude(report1.getLongitude());
+				task2.execute();
+				
+				updateCity(report1.getCityName());
+				
+				
+
+			}
+		});
+			
+			nearby2.setOnClickListener(new View.OnClickListener() {
+
+				@Override
+				public void onClick(View arg0) {
+					WeatherTask task = new WeatherTask();
+					task.setLatitude(report2.getLatitude());
+					task.setLongitude(report2.getLongitude());
+					task.setFirstSearch(true);
+					task.execute();
+
+					ForecastTask task1 = new ForecastTask();
+					task1.setLatitude(report2.getLatitude());
+					task1.setLongitude(report2.getLongitude());
+					task1.setIsFirstSearch(true);
+					task1.execute();
+
+					WeatherNearbyTask task2 = new WeatherNearbyTask();
+					task2.setLatitude(report2.getLatitude());
+					task2.setLongitude(report2.getLongitude());
+					task2.execute();
+
+					updateCity(report2.getCityName());
+
+				}
+			});
+			
+			nearby3.setOnClickListener(new View.OnClickListener() {
+
+				@Override
+				public void onClick(View arg0) {
+					WeatherTask task = new WeatherTask();
+					task.setLatitude(report3.getLatitude());
+					task.setLongitude(report3.getLongitude());
+					task.setFirstSearch(true);
+					task.execute();
+
+					ForecastTask task1 = new ForecastTask();
+					task1.setLatitude(report3.getLatitude());
+					task1.setLongitude(report3.getLongitude());
+					task1.setIsFirstSearch(true);
+					task1.execute();
+
+					WeatherNearbyTask task2 = new WeatherNearbyTask();
+					task2.setLatitude(report3.getLatitude());
+					task2.setLongitude(report3.getLongitude());
+					task2.execute();
+
+					updateCity(report3.getCityName());
+
+				}
+			});
+
+			nearby4.setOnClickListener(new View.OnClickListener() {
+
+				@Override
+				public void onClick(View arg0) {
+					WeatherTask task = new WeatherTask();
+					task.setLatitude(report4.getLatitude());
+					task.setLongitude(report4.getLongitude());
+					task.setFirstSearch(true);
+					task.execute();
+
+					ForecastTask task1 = new ForecastTask();
+					task1.setLatitude(report4.getLatitude());
+					task1.setLongitude(report4.getLongitude());
+					task1.setIsFirstSearch(true);
+					task1.execute();
+
+					WeatherNearbyTask task2 = new WeatherNearbyTask();
+					task2.setLatitude(report4.getLatitude());
+					task2.setLongitude(report4.getLongitude());
+					task2.execute();
+
+					updateCity(report4.getCityName());
+
+				}
+			});
 
 			TextView city1 = (TextView) findViewById(R.id.city1);
 			TextView city2 = (TextView) findViewById(R.id.city2);
@@ -634,7 +756,7 @@ public class MainActivity extends ActionBarActivity implements
 							setNearbyView();
 						else
 							Toast.makeText(mainContext,
-									"Weather details unavailable",
+									"Nearby Weather info unavailable",
 									Toast.LENGTH_LONG).show();
 					}
 				});
@@ -645,7 +767,7 @@ public class MainActivity extends ActionBarActivity implements
 					@Override
 					public void run() {
 						Toast.makeText(mainContext,
-								"Weather details unavailable",
+								"Nearby Weather info unavailable",
 								Toast.LENGTH_LONG).show();
 					}
 				});
@@ -761,10 +883,11 @@ public class MainActivity extends ActionBarActivity implements
 
 				ImageView icon = new ImageView(mainContext);
 				LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(
-						LayoutParams.MATCH_PARENT, 0, 3);
+						LayoutParams.WRAP_CONTENT, 0, 3);
 
-				iconParams.setMargins(-10, 0, 0, 0);
-
+				iconParams.setMargins(0, 0, 0, 0);
+				
+				iconParams.gravity=Gravity.CENTER;
 				icon.setBackgroundResource(iconMap.get(currentReport
 						.getIconId()));
 				icon.setLayoutParams(iconParams);
@@ -784,8 +907,8 @@ public class MainActivity extends ActionBarActivity implements
 
 				}
 				temp.setGravity(Gravity.CENTER);
-				temp.setText("    " + maxTemp + "\u00b0     " + minTemp
-						+ "\u00b0     ");
+				temp.setText( maxTemp + "\u00b0        " + minTemp
+						+ "\u00b0");
 				LinearLayout.LayoutParams tempTextParams = new LinearLayout.LayoutParams(
 						LayoutParams.MATCH_PARENT, 0, 2);
 				temp.setTextSize(14);
@@ -885,7 +1008,7 @@ public class MainActivity extends ActionBarActivity implements
 					@Override
 					public void run() {
 						Toast.makeText(mainContext,
-								"Weather details unavailable",
+								"Forecast Weather info unavailable",
 								Toast.LENGTH_LONG).show();
 						// forecastProgress.setVisibility(View.GONE);
 					}
@@ -1227,7 +1350,7 @@ public class MainActivity extends ActionBarActivity implements
 						location.getLongitude(), 1);
 				if (addresses.size() > 0) {
 					Address current = addresses.get(0);
-					city.setText(current.getLocality().toUpperCase());
+					city.setText(current.getLocality());
 					state_country.setText(current.getAdminArea() + ","
 							+ current.getCountryCode());
 				}
@@ -1253,6 +1376,8 @@ public class MainActivity extends ActionBarActivity implements
 			task2.setLongitude(location.getLongitude());
 			task2.execute();
 
+			locationManager.removeUpdates(this);
+
 		}
 
 		@Override
@@ -1266,6 +1391,12 @@ public class MainActivity extends ActionBarActivity implements
 		@Override
 		public void onStatusChanged(String provider, int status, Bundle extras) {
 		}
+	}
+	
+	private void updateCity(String city1)
+	{
+		city.setText(city1);
+		autoCompView.setText("");
 	}
 
 }
