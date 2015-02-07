@@ -21,6 +21,7 @@ import org.json.JSONException;
 import android.annotation.SuppressLint;
 import android.app.ActionBar.LayoutParams;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -86,7 +87,8 @@ public class MainActivity extends ActionBarActivity implements
 	LinearLayout forecastLayout = null;
 	RelativeLayout forecastProgress = null;
 	LinearLayout nearbyLayout = null;
-	RelativeLayout tempProgress = null;
+	ProgressDialog tempProgress = null;
+	LinearLayout titleBar=null;
 
 	private static final String GEO_CODE_URL = "http://gd.geobytes.com/AutoCompleteCity?callback=&q=";
 	private static final String LOG_TAG = "WeatherApp";
@@ -132,6 +134,8 @@ public class MainActivity extends ActionBarActivity implements
 		tempDetails.setVisibility(View.GONE);
 		forecastLayout.setVisibility(View.GONE);
 		nearbyLayout.setVisibility(View.GONE);
+		tempProgress=new ProgressDialog(mainContext);
+		titleBar=(LinearLayout)findViewById(R.id.titlebar);
 		initializeMaps();
 
 	}
@@ -187,7 +191,10 @@ public class MainActivity extends ActionBarActivity implements
 
 		setContentView(R.layout.weather_main);
 		initializeAll();
-		
+
+		tempProgress.setMessage("Loading Weather Info ");
+		tempProgress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		tempProgress.setIndeterminate(true);
 		clearIcon.setOnClickListener(new View.OnClickListener() {
 
 			@Override
@@ -393,8 +400,9 @@ public class MainActivity extends ActionBarActivity implements
 			mainLayout.setVisibility(View.GONE);
 			buildAlertMessageNoInternet();
 		} else {
+			tempProgress.show();
 			mainLayout.setVisibility(View.VISIBLE);
-
+			titleBar.setVisibility(View.GONE);
 			LocationListener locationListener = new MyLocationListener();
 			locationManager.requestLocationUpdates(
 					LocationManager.GPS_PROVIDER, 0,0, locationListener);
@@ -1250,23 +1258,29 @@ public class MainActivity extends ActionBarActivity implements
 				@Override
 				public void run() {
 					// tempProgress.setVisibility(View.GONE);
+					titleBar.setVisibility(View.VISIBLE);
+
 					tempDetails.setVisibility(View.VISIBLE);
+					tempProgress.dismiss();
 				}
 			});
 
 		}
+		
+		@Override
+		protected void onPreExecute() {
+			// TODO Auto-generated method stub
+			super.onPreExecute();
+			
+					tempProgress.show();
+			
 
-	}
-
-	public static Drawable LoadImageFromWebOperations(String url) {
-		try {
-			InputStream is = (InputStream) new URL(url).getContent();
-			Drawable d = Drawable.createFromStream(is, "src name");
-			return d;
-		} catch (Exception e) {
-			return null;
 		}
+		
+
 	}
+
+	
 
 	private double calculateDistance(double fromLong, double fromLat,
 			double toLong, double toLat) {
