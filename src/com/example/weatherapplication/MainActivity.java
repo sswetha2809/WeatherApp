@@ -25,7 +25,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -35,7 +34,6 @@ import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
-import android.text.Layout;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -61,20 +59,20 @@ import com.google.gson.JsonParser;
 
 @SuppressLint("NewApi")
 public class MainActivity extends ActionBarActivity implements
-		OnItemClickListener {
+OnItemClickListener {
 	static Report report = new Report();
 	TextView prediction = null;
 	TextView temp = null;
 	TextView humidity = null;
 	TextView cloudPercent = null;
 	TextView windSpeed = null;
-	 TextView city = null;
+	TextView city = null;
 	TextView state_country = null;
 	TextView date = null;
 	AutoCompleteTextView autoCompView = null;
 	ImageView descriptionIcon = null;
 	ImageView locationIcon = null;
-	ImageView clearIcon=null;
+	ImageView clearIcon = null;
 	TextView minMaxtemp = null;
 	List<Report> forecastReport = new ArrayList<Report>();
 	List<Report> nearbyReport = new ArrayList<Report>();
@@ -88,7 +86,7 @@ public class MainActivity extends ActionBarActivity implements
 	RelativeLayout forecastProgress = null;
 	LinearLayout nearbyLayout = null;
 	ProgressDialog tempProgress = null;
-	LinearLayout titleBar=null;
+	LinearLayout titleBar = null;
 
 	private static final String GEO_CODE_URL = "http://gd.geobytes.com/AutoCompleteCity?callback=&q=";
 	private static final String LOG_TAG = "WeatherApp";
@@ -104,7 +102,7 @@ public class MainActivity extends ActionBarActivity implements
 	/** The activity. */
 	public MainActivity activity = this;
 
-	ImageView temperatureIcon = null;
+	TextView temperatureIcon = null;
 	ImageView predictionIcon = null;
 
 	private void initializeAll() {
@@ -124,18 +122,20 @@ public class MainActivity extends ActionBarActivity implements
 		minMaxtemp = (TextView) findViewById(R.id.minMaxTemp);
 		city = (TextView) findViewById(R.id.city);
 		state_country = (TextView) findViewById(R.id.state_country);
-		temperatureIcon = (ImageView) findViewById(R.id.temperatureIcon);
+		temperatureIcon = (TextView) findViewById(R.id.temperatureIcon);
 		temperatureIcon.setContentDescription("Celcius");
 		tempDetails = (LinearLayout) findViewById(R.id.tempDetails);
 		date = (TextView) findViewById(R.id.time);
 		locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 		locationIcon = (ImageView) findViewById(R.id.locationIcon);
-		clearIcon = (ImageView)findViewById(R.id.clearIcon);
+		clearIcon = (ImageView) findViewById(R.id.clearIcon);
+
+		tempProgress = new ProgressDialog(mainContext);
+		titleBar = (LinearLayout) findViewById(R.id.titlebar);
+		titleBar.setVisibility(View.GONE);
 		tempDetails.setVisibility(View.GONE);
 		forecastLayout.setVisibility(View.GONE);
 		nearbyLayout.setVisibility(View.GONE);
-		tempProgress=new ProgressDialog(mainContext);
-		titleBar=(LinearLayout)findViewById(R.id.titlebar);
 		initializeMaps();
 
 	}
@@ -195,11 +195,13 @@ public class MainActivity extends ActionBarActivity implements
 		tempProgress.setMessage("Loading Weather Info ");
 		tempProgress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 		tempProgress.setIndeterminate(true);
+		temperatureIcon.setText("\u00b0C");
+
 		clearIcon.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View arg0) {
-			autoCompView.setText("");
+				autoCompView.setText("");
 
 			}
 		});
@@ -220,33 +222,36 @@ public class MainActivity extends ActionBarActivity implements
 			@Override
 			public void onClick(View arg0) {
 				int minTemp = 0, maxTemp = 0, temp1 = 0;
-			
 
 				if (temperatureIcon.getContentDescription().equals("Celcius")) {
-				
+
 					temperatureIcon.setContentDescription("Fahrenheit");
 					minTemp = (int) (report.getMinTemp() - 273.15) * (9 / 5)
 							+ 32;
 					maxTemp = (int) (report.getMaxTemp() - 273.15) * (9 / 5)
 							+ 32;
 					temp1 = (int) (report.getTemp() - 273.15) * (9 / 5) + 32;
+					temperatureIcon.setText("\u00b0F");
+
 
 				} else {
-					
+
 					temperatureIcon.setContentDescription("Celcius");
 					minTemp = (int) (report.getMinTemp() - 273.15);
 					maxTemp = (int) (report.getMaxTemp() - 273.15);
 					temp1 = (int) (report.getTemp() - 273.15);
+					temperatureIcon.setText("\u00b0C");
+
+
 
 				}
-				minMaxtemp.setText("Min: " + minTemp + "\u00b0 Max: " + maxTemp
-						+ "\u00b0");
+				minMaxtemp.setText(minTemp + "\u00b0     " + maxTemp + "\u00b0");
+				temp.setText(String.valueOf(temp1));
 
-				temp.setText(temp1 + " ");
 
 			}
 		});
-
+		mainLayout.setVisibility(View.VISIBLE);
 		getAddress();
 
 	}
@@ -315,7 +320,7 @@ public class MainActivity extends ActionBarActivity implements
 	}
 
 	private class PlacesAutoCompleteAdapter extends ArrayAdapter<String>
-			implements Filterable {
+	implements Filterable {
 		private ArrayList<String> resultList;
 
 		public PlacesAutoCompleteAdapter(Context context, int textViewResourceId) {
@@ -401,11 +406,15 @@ public class MainActivity extends ActionBarActivity implements
 			buildAlertMessageNoInternet();
 		} else {
 			tempProgress.show();
-			mainLayout.setVisibility(View.VISIBLE);
-			titleBar.setVisibility(View.GONE);
-			LocationListener locationListener = new MyLocationListener();
-			locationManager.requestLocationUpdates(
-					LocationManager.GPS_PROVIDER, 0,0, locationListener);
+			Location location = locationManager
+					.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			if (location == null) {
+				LocationListener locationListener = new MyLocationListener();
+				locationManager.requestLocationUpdates(
+						LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+			} else {
+				updateWeatherInfo(location);
+			}
 		}
 
 	}
@@ -438,40 +447,38 @@ public class MainActivity extends ActionBarActivity implements
 			final Report report2 = nearbyReport.get(2);
 			final Report report3 = nearbyReport.get(3);
 			final Report report4 = nearbyReport.get(4);
-			
-			LinearLayout nearby1=(LinearLayout)findViewById(R.id.nearby1);
-			LinearLayout nearby2=(LinearLayout)findViewById(R.id.nearby2);
-			LinearLayout nearby3=(LinearLayout)findViewById(R.id.nearby3);
-			LinearLayout nearby4=(LinearLayout)findViewById(R.id.nearby4);
-			
+
+			LinearLayout nearby1 = (LinearLayout) findViewById(R.id.nearby1);
+			LinearLayout nearby2 = (LinearLayout) findViewById(R.id.nearby2);
+			LinearLayout nearby3 = (LinearLayout) findViewById(R.id.nearby3);
+			LinearLayout nearby4 = (LinearLayout) findViewById(R.id.nearby4);
+
 			nearby1.setOnClickListener(new View.OnClickListener() {
 
-			@Override
-			public void onClick(View arg0) {
-				WeatherTask task = new WeatherTask();
-				task.setLatitude(report1.getLatitude());
-				task.setLongitude(report1.getLongitude());
-				task.setFirstSearch(true);
-				task.execute();
+				@Override
+				public void onClick(View arg0) {
+					WeatherTask task = new WeatherTask();
+					task.setLatitude(report1.getLatitude());
+					task.setLongitude(report1.getLongitude());
+					task.setFirstSearch(true);
+					task.execute();
 
-				ForecastTask task1 = new ForecastTask();
-				task1.setLatitude(report1.getLatitude());
-				task1.setLongitude(report1.getLongitude());
-				task1.setIsFirstSearch(true);
-				task1.execute();
+					ForecastTask task1 = new ForecastTask();
+					task1.setLatitude(report1.getLatitude());
+					task1.setLongitude(report1.getLongitude());
+					task1.setIsFirstSearch(true);
+					task1.execute();
 
-				WeatherNearbyTask task2 = new WeatherNearbyTask();
-				task2.setLatitude(report1.getLatitude());
-				task2.setLongitude(report1.getLongitude());
-				task2.execute();
-				
-				updateCity(report1.getCityName());
-				
-				
+					WeatherNearbyTask task2 = new WeatherNearbyTask();
+					task2.setLatitude(report1.getLatitude());
+					task2.setLongitude(report1.getLongitude());
+					task2.execute();
 
-			}
-		});
-			
+					updateCity(report1.getCityName());
+
+				}
+			});
+
 			nearby2.setOnClickListener(new View.OnClickListener() {
 
 				@Override
@@ -497,7 +504,7 @@ public class MainActivity extends ActionBarActivity implements
 
 				}
 			});
-			
+
 			nearby3.setOnClickListener(new View.OnClickListener() {
 
 				@Override
@@ -854,9 +861,7 @@ public class MainActivity extends ActionBarActivity implements
 			this.state = state;
 		}
 
-		public boolean getIsFirstSearch() {
-			return isFirstSearch;
-		}
+		
 
 		public void setIsFirstSearch(boolean isFirstSearch) {
 			this.isFirstSearch = isFirstSearch;
@@ -894,8 +899,8 @@ public class MainActivity extends ActionBarActivity implements
 						LayoutParams.WRAP_CONTENT, 0, 3);
 
 				iconParams.setMargins(0, 0, 0, 0);
-				
-				iconParams.gravity=Gravity.CENTER;
+
+				iconParams.gravity = Gravity.CENTER;
 				icon.setBackgroundResource(iconMap.get(currentReport
 						.getIconId()));
 				icon.setLayoutParams(iconParams);
@@ -915,8 +920,7 @@ public class MainActivity extends ActionBarActivity implements
 
 				}
 				temp.setGravity(Gravity.CENTER);
-				temp.setText( maxTemp + "\u00b0        " + minTemp
-						+ "\u00b0");
+				temp.setText(maxTemp + "\u00b0        " + minTemp + "\u00b0");
 				LinearLayout.LayoutParams tempTextParams = new LinearLayout.LayoutParams(
 						LayoutParams.MATCH_PARENT, 0, 2);
 				temp.setTextSize(14);
@@ -996,7 +1000,7 @@ public class MainActivity extends ActionBarActivity implements
 
 					Date newDate = DateUtil.addDays(cal.getTime(), i + 1);
 					rep.setDay(Integer.parseInt(new SimpleDateFormat("dd")
-							.format(newDate)));
+					.format(newDate)));
 					rep.setMonth(new SimpleDateFormat("MMM").format(newDate));
 
 					forecastReport.add(i, rep);
@@ -1056,16 +1060,13 @@ public class MainActivity extends ActionBarActivity implements
 	private class WeatherTask extends AsyncTask<Void, String, String> {
 		private String BASE_URL = "http://api.openweathermap.org/data/2.5/weather?q=";
 		private String LAT_LONG_URL = "http://api.openweathermap.org/data/2.5/find?";
-		private String ICON_URL = "http://openweathermap.org/img/w/";
 		private String city;
 		private String state;
 		private double latitude;
 		private double longitude;
 		private boolean isFirstSearch;
 
-		public boolean isFirstSearch() {
-			return isFirstSearch;
-		}
+		
 
 		public void setFirstSearch(boolean isFirstSearch) {
 			this.isFirstSearch = isFirstSearch;
@@ -1106,7 +1107,7 @@ public class MainActivity extends ActionBarActivity implements
 		public void setWeatherView() {
 			prediction.setText(report.getDescription());
 			predictionIcon
-					.setBackgroundResource(iconMap.get(report.getIconId()));
+			.setBackgroundResource(iconMap.get(report.getIconId()));
 			date.setText(report.getMonth() + " " + report.getDay());
 			mainLayout.setBackgroundResource(bgMap.get(report.getIconId()));
 
@@ -1121,7 +1122,7 @@ public class MainActivity extends ActionBarActivity implements
 				temp1 = (int) (report.getTemp() - 273.15) * (9 / 5) + 32;
 			}
 			minMaxtemp.setText(minTemp + "\u00b0     " + maxTemp + "\u00b0");
-			temp.setText(temp1 + "\u00b0");
+			temp.setText(String.valueOf(temp1));
 
 			humidity.setText(report.getHumidity() + "%");
 			cloudPercent.setText(report.getClouds() + "%");
@@ -1210,7 +1211,7 @@ public class MainActivity extends ActionBarActivity implements
 				report.setMonth(new SimpleDateFormat("MMM").format(cal
 						.getTime()));
 				report.setDay(Integer.parseInt(new SimpleDateFormat("dd")
-						.format(cal.getTime())));
+				.format(cal.getTime())));
 				activity.runOnUiThread(new Runnable() {
 
 					@Override
@@ -1266,21 +1267,17 @@ public class MainActivity extends ActionBarActivity implements
 			});
 
 		}
-		
+
 		@Override
 		protected void onPreExecute() {
 			// TODO Auto-generated method stub
 			super.onPreExecute();
-			
-					tempProgress.show();
-			
+
+			tempProgress.show();
 
 		}
-		
 
 	}
-
-	
 
 	private double calculateDistance(double fromLong, double fromLat,
 			double toLong, double toLat) {
@@ -1301,17 +1298,17 @@ public class MainActivity extends ActionBarActivity implements
 				.setCancelable(false)
 				.setPositiveButton("Yes",
 						new DialogInterface.OnClickListener() {
-							public void onClick(
-									@SuppressWarnings("unused") final DialogInterface dialog,
-									@SuppressWarnings("unused") final int id) {
-								startActivity(new Intent(
-										android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-								activity.finish();
-							}
-						})
+					public void onClick(
+							final DialogInterface dialog,
+							 final int id) {
+						startActivity(new Intent(
+								android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+						activity.finish();
+					}
+				})
 				.setNegativeButton("No", new DialogInterface.OnClickListener() {
 					public void onClick(final DialogInterface dialog,
-							@SuppressWarnings("unused") final int id) {
+							 final int id) {
 						dialog.cancel();
 						activity.finish();
 					}
@@ -1323,21 +1320,20 @@ public class MainActivity extends ActionBarActivity implements
 	private void buildAlertMessageNoInternet() {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setMessage("Please check you network connection")
-				.setCancelable(false)
-				.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-					public void onClick(
-							@SuppressWarnings("unused") final DialogInterface dialog,
-							@SuppressWarnings("unused") final int id) {
-						activity.finish();
-					}
-				});
+		.setCancelable(false)
+		.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			public void onClick(
+					 final DialogInterface dialog,
+					final int id) {
+				activity.finish();
+			}
+		});
 		final AlertDialog alert = builder.create();
 		alert.show();
 	}
 
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		super.onResume();
 	}
 
@@ -1355,40 +1351,7 @@ public class MainActivity extends ActionBarActivity implements
 		@Override
 		public void onLocationChanged(Location location) {
 
-			Geocoder gcd = new Geocoder(MainActivity.this, Locale.getDefault());
-
-			List<Address> addresses;
-			autoCompView.setText("");
-			try {
-				addresses = gcd.getFromLocation(location.getLatitude(),
-						location.getLongitude(), 1);
-				if (addresses.size() > 0) {
-					Address current = addresses.get(0);
-					city.setText(current.getLocality());
-					state_country.setText(current.getAdminArea() + ","
-							+ current.getCountryCode());
-				}
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			WeatherTask task = new WeatherTask();
-			task.setLatitude(location.getLatitude());
-			task.setLongitude(location.getLongitude());
-			task.setFirstSearch(true);
-			task.execute();
-
-			ForecastTask task1 = new ForecastTask();
-			task1.setLatitude(location.getLatitude());
-			task1.setLongitude(location.getLongitude());
-			task1.setIsFirstSearch(true);
-			task1.execute();
-
-			WeatherNearbyTask task2 = new WeatherNearbyTask();
-			task2.setLatitude(location.getLatitude());
-			task2.setLongitude(location.getLongitude());
-			task2.execute();
+			updateWeatherInfo(location);
 
 			locationManager.removeUpdates(this);
 
@@ -1406,11 +1369,47 @@ public class MainActivity extends ActionBarActivity implements
 		public void onStatusChanged(String provider, int status, Bundle extras) {
 		}
 	}
-	
-	private void updateCity(String city1)
-	{
+
+	private void updateCity(String city1) {
 		city.setText(city1);
 		autoCompView.setText("");
+	}
+
+	private void updateWeatherInfo(Location location) {
+		Geocoder gcd = new Geocoder(MainActivity.this, Locale.getDefault());
+
+		List<Address> addresses;
+		autoCompView.setText("");
+		try {
+			addresses = gcd.getFromLocation(location.getLatitude(),
+					location.getLongitude(), 1);
+			if (addresses.size() > 0) {
+				Address current = addresses.get(0);
+				city.setText(current.getLocality());
+				state_country.setText(current.getAdminArea() + ","
+						+ current.getCountryCode());
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		WeatherTask task = new WeatherTask();
+		task.setLatitude(location.getLatitude());
+		task.setLongitude(location.getLongitude());
+		task.setFirstSearch(true);
+		task.execute();
+
+		ForecastTask task1 = new ForecastTask();
+		task1.setLatitude(location.getLatitude());
+		task1.setLongitude(location.getLongitude());
+		task1.setIsFirstSearch(true);
+		task1.execute();
+
+		WeatherNearbyTask task2 = new WeatherNearbyTask();
+		task2.setLatitude(location.getLatitude());
+		task2.setLongitude(location.getLongitude());
+		task2.execute();
 	}
 
 }
