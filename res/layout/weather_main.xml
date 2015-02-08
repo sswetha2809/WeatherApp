@@ -27,7 +27,9 @@
                 android:layout_marginTop="25dp"
                 android:layout_weight="9"
                 android:clickable="true"
-                android:ems="10" />
+                android:ems="10" 
+               
+                />
 
             <ImageView
                 android:id="@+id/clearIcon"

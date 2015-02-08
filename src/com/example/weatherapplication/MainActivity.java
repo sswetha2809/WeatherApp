@@ -95,6 +95,7 @@ OnItemClickListener {
 	boolean weatherComplete = false;
 	boolean forecastComplete = false;
 	boolean nearbyComplete = false;
+	String[] strArray;
 
 	/** The main context. */
 	public Context mainContext = this;
@@ -378,8 +379,9 @@ OnItemClickListener {
 		forecastLayout.setVisibility(View.GONE);
 		nearbyLayout.setVisibility(View.GONE);
 		String str = (String) adapterView.getItemAtPosition(position);
+		strArray = str.split(",");
 		str = str.replace(" ", "");
-		String[] strArray = str.split(",");
+
 		WeatherTask task = new WeatherTask();
 		task.setCity(strArray[0]);
 		task.setState(strArray[1]);
@@ -391,8 +393,7 @@ OnItemClickListener {
 		task1.setState(strArray[1]);
 		task1.setIsFirstSearch(false);
 		task1.execute();
-		city.setText(strArray[0]);
-		state_country.setText(strArray[1] + "," + strArray[2]);
+		
 
 	}
 
@@ -1105,6 +1106,11 @@ OnItemClickListener {
 		}
 
 		public void setWeatherView() {
+			if(!isFirstSearch)
+			{
+			activity.city.setText(strArray[0]);
+			state_country.setText(strArray[1] + "," + strArray[2]);
+			}
 			prediction.setText(report.getDescription());
 			predictionIcon
 			.setBackgroundResource(iconMap.get(report.getIconId()));
@@ -1260,7 +1266,7 @@ OnItemClickListener {
 				public void run() {
 					// tempProgress.setVisibility(View.GONE);
 					titleBar.setVisibility(View.VISIBLE);
-
+					
 					tempDetails.setVisibility(View.VISIBLE);
 					tempProgress.dismiss();
 				}
