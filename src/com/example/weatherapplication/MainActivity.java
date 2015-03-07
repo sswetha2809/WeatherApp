@@ -1,3 +1,6 @@
+/*
+ * author: swetha
+ */
 package com.example.weatherapplication;
 
 import java.io.BufferedReader;
@@ -57,44 +60,105 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class MainActivity.
+ */
 @SuppressLint("NewApi")
 public class MainActivity extends ActionBarActivity implements
-OnItemClickListener {
+		OnItemClickListener {
+
+	/** The report. */
 	static Report report = new Report();
+
+	/** The prediction. */
 	TextView prediction = null;
+
+	/** The temp. */
 	TextView temp = null;
+
+	/** The humidity. */
 	TextView humidity = null;
+
+	/** The cloud percent. */
 	TextView cloudPercent = null;
+
+	/** The wind speed. */
 	TextView windSpeed = null;
+
+	/** The city. */
 	TextView city = null;
+
+	/** The state_country. */
 	TextView state_country = null;
+
+	/** The date. */
 	TextView date = null;
+
+	/** The auto comp view. */
 	AutoCompleteTextView autoCompView = null;
+
+	/** The description icon. */
 	ImageView descriptionIcon = null;
+
+	/** The location icon. */
 	ImageView locationIcon = null;
+
+	/** The clear icon. */
 	ImageView clearIcon = null;
+
+	/** The min maxtemp. */
 	TextView minMaxtemp = null;
+
+	/** The forecast report. */
 	List<Report> forecastReport = new ArrayList<Report>();
+
+	/** The nearby report. */
 	List<Report> nearbyReport = new ArrayList<Report>();
+
+	/** The icon map. */
 	HashMap<String, Integer> iconMap = new HashMap<String, Integer>();
+
+	/** The bg map. */
 	HashMap<String, Integer> bgMap = new HashMap<String, Integer>();
 
+	/** The cal. */
 	Calendar cal = Calendar.getInstance();
+
+	/** The main layout. */
 	LinearLayout mainLayout = null;
+
+	/** The temp details. */
 	LinearLayout tempDetails = null;
+
+	/** The forecast layout. */
 	LinearLayout forecastLayout = null;
+
+	/** The forecast progress. */
 	RelativeLayout forecastProgress = null;
+
+	/** The nearby layout. */
 	LinearLayout nearbyLayout = null;
+
+	/** The temp progress. */
 	ProgressDialog tempProgress = null;
+
+	/** The title bar. */
 	LinearLayout titleBar = null;
 
-	private static final String GEO_CODE_URL = "http://gd.geobytes.com/AutoCompleteCity?callback=&q=";
-	private static final String LOG_TAG = "WeatherApp";
-
+	/** The location manager. */
 	LocationManager locationManager = null;
+
+	/** The weather complete. */
 	boolean weatherComplete = false;
+
+	/** The forecast complete. */
 	boolean forecastComplete = false;
+
+	/** The nearby complete. */
 	boolean nearbyComplete = false;
+
+	/** The str array. */
 	String[] strArray;
 
 	/** The main context. */
@@ -103,9 +167,15 @@ OnItemClickListener {
 	/** The activity. */
 	public MainActivity activity = this;
 
+	/** The temperature icon. */
 	TextView temperatureIcon = null;
+
+	/** The prediction icon. */
 	ImageView predictionIcon = null;
 
+	/**
+	 * Initializes all the variables with the necessary values.
+	 */
 	private void initializeAll() {
 		predictionIcon = (ImageView) findViewById(R.id.predictionIcon);
 		autoCompView = (AutoCompleteTextView) findViewById(R.id.autocomplete);
@@ -141,6 +211,10 @@ OnItemClickListener {
 
 	}
 
+	/**
+	 * Initialize the icon - image map and background image map. used for
+	 * loading the icons and the backgrounds for various screens
+	 */
 	private void initializeMaps() {
 		iconMap.put("01d", R.drawable.clearsky_day_icon);
 		iconMap.put("01n", R.drawable.clearsky_night_icon);
@@ -181,6 +255,11 @@ OnItemClickListener {
 		bgMap.put("50n", R.drawable.snowymorning);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.support.v7.app.ActionBarActivity#onCreate(android.os.Bundle)
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -193,19 +272,26 @@ OnItemClickListener {
 		setContentView(R.layout.weather_main);
 		initializeAll();
 
-		tempProgress.setMessage("Loading Weather Info ");
+		// Showing spinner bar till the content is loaded
+
+		tempProgress.setMessage(Constants.SPINNER_MESSAGE);
 		tempProgress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 		tempProgress.setIndeterminate(true);
-		temperatureIcon.setText("\u00b0C");
+		temperatureIcon.setText(Constants.DEGREE + "C");
+
+		// listener for clear icon which clears the autocomplete text area
 
 		clearIcon.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View arg0) {
-				autoCompView.setText("");
+				autoCompView.setText(Constants.EMPTY_STRING);
 
 			}
 		});
+
+		// listener for location icon which fetches the current location
+		// temperature
 
 		locationIcon.setOnClickListener(new View.OnClickListener() {
 
@@ -218,37 +304,38 @@ OnItemClickListener {
 
 			}
 		});
+
+		// listener for temperature icon that converts the temp between
+		// Fahreheit and Celcius
 		temperatureIcon.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View arg0) {
 				int minTemp = 0, maxTemp = 0, temp1 = 0;
 
-				if (temperatureIcon.getContentDescription().equals("Celcius")) {
+				if (temperatureIcon.getContentDescription().equals(
+						Constants.CELCIUS)) {
 
-					temperatureIcon.setContentDescription("Fahrenheit");
+					temperatureIcon.setContentDescription(Constants.FAHRENHEIT);
 					minTemp = (int) (report.getMinTemp() - 273.15) * (9 / 5)
 							+ 32;
 					maxTemp = (int) (report.getMaxTemp() - 273.15) * (9 / 5)
 							+ 32;
 					temp1 = (int) (report.getTemp() - 273.15) * (9 / 5) + 32;
-					temperatureIcon.setText("\u00b0F");
-
+					temperatureIcon.setText(Constants.DEGREE + "F");
 
 				} else {
 
-					temperatureIcon.setContentDescription("Celcius");
+					temperatureIcon.setContentDescription(Constants.CELCIUS);
 					minTemp = (int) (report.getMinTemp() - 273.15);
 					maxTemp = (int) (report.getMaxTemp() - 273.15);
 					temp1 = (int) (report.getTemp() - 273.15);
-					temperatureIcon.setText("\u00b0C");
-
-
+					temperatureIcon.setText(Constants.DEGREE + "C");
 
 				}
-				minMaxtemp.setText(minTemp + "\u00b0     " + maxTemp + "\u00b0");
+				minMaxtemp.setText(minTemp + Constants.DEGREE + "     "
+						+ maxTemp + Constants.DEGREE);
 				temp.setText(String.valueOf(temp1));
-
 
 			}
 		});
@@ -257,6 +344,11 @@ OnItemClickListener {
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -264,6 +356,11 @@ OnItemClickListener {
 		return true;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
@@ -276,13 +373,21 @@ OnItemClickListener {
 		return super.onOptionsItemSelected(item);
 	}
 
+	/**
+	 * Method that handles the autocomplete text area with the suggestions of
+	 * the city names
+	 * 
+	 * @param input
+	 *            the input
+	 * @return the array list
+	 */
 	private ArrayList<String> autocomplete(String input) {
 		ArrayList<String> resultList = null;
 
 		HttpURLConnection conn = null;
 		StringBuilder jsonResults = new StringBuilder();
 		try {
-			URL url = new URL(GEO_CODE_URL + input);
+			URL url = new URL(Constants.GEO_CODE_URL + input);
 			conn = (HttpURLConnection) url.openConnection();
 			InputStreamReader in = new InputStreamReader(conn.getInputStream());
 
@@ -293,10 +398,10 @@ OnItemClickListener {
 				jsonResults.append(buff, 0, read);
 			}
 		} catch (MalformedURLException e) {
-			Log.e(LOG_TAG, "Error processing Places API URL", e);
+			Log.e(Constants.LOG_TAG, "Error processing Places API URL", e);
 			return resultList;
 		} catch (IOException e) {
-			Log.e(LOG_TAG, "Error connecting to Places API", e);
+			Log.e(Constants.LOG_TAG, "Error connecting to Places API", e);
 			return resultList;
 		} finally {
 			if (conn != null) {
@@ -314,21 +419,39 @@ OnItemClickListener {
 				resultList.add(predsJsonArray.get(i).toString());
 			}
 		} catch (JSONException e) {
-			Log.e(LOG_TAG, "Cannot process JSON results", e);
+			Log.e(Constants.LOG_TAG, "Cannot process JSON results", e);
 		}
 
 		return resultList;
 	}
 
+	/**
+	 * Adapter Class for PlacesAutoComplete
+	 */
 	private class PlacesAutoCompleteAdapter extends ArrayAdapter<String>
-	implements Filterable {
+			implements Filterable {
+
+		/** The result list. */
 		private ArrayList<String> resultList;
 
+		/**
+		 * Instantiates a new places auto complete adapter.
+		 * 
+		 * @param context
+		 *            the context
+		 * @param textViewResourceId
+		 *            the text view resource id
+		 */
 		public PlacesAutoCompleteAdapter(Context context, int textViewResourceId) {
 			super(context, textViewResourceId);
 
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.widget.ArrayAdapter#getCount()
+		 */
 		@Override
 		public int getCount() {
 			if (resultList != null)
@@ -337,11 +460,21 @@ OnItemClickListener {
 				return 0;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.widget.ArrayAdapter#getItem(int)
+		 */
 		@Override
 		public String getItem(int index) {
 			return resultList.get(index);
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.widget.ArrayAdapter#getFilter()
+		 */
 		@Override
 		public Filter getFilter() {
 			Filter filter = new Filter() {
@@ -350,7 +483,7 @@ OnItemClickListener {
 					FilterResults filterResults = new FilterResults();
 					if (constraint != null) {
 						String str = constraint.toString();
-						str.replace(" ", "");
+						str.replace(" ", Constants.EMPTY_STRING);
 						resultList = autocomplete(constraint.toString());
 						filterResults.values = resultList;
 						filterResults.count = resultList.size();
@@ -372,6 +505,14 @@ OnItemClickListener {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * android.widget.AdapterView.OnItemClickListener#onItemClick(android.widget
+	 * .AdapterView, android.view.View, int, long) Listener to select from the
+	 * list of cities
+	 */
 	@Override
 	public void onItemClick(AdapterView<?> adapterView, View view,
 			int position, long ID) {
@@ -379,8 +520,11 @@ OnItemClickListener {
 		forecastLayout.setVisibility(View.GONE);
 		nearbyLayout.setVisibility(View.GONE);
 		String str = (String) adapterView.getItemAtPosition(position);
-		strArray = str.split(",");
-		str = str.replace(" ", "");
+		strArray = str.split(Constants.COMMA_SPLITTER);
+		str = str.replace(" ", Constants.EMPTY_STRING);
+
+		// Invoke the Async task to display the weather info of the currently
+		// selected city
 
 		WeatherTask task = new WeatherTask();
 		task.setCity(strArray[0]);
@@ -388,16 +532,25 @@ OnItemClickListener {
 		task.setFirstSearch(false);
 		task.execute();
 
+		// Invoke the Async task to display the forecast info of the currently
+		// selected city
+
 		ForecastTask task1 = new ForecastTask();
 		task1.setCity(strArray[0]);
 		task1.setState(strArray[1]);
 		task1.setIsFirstSearch(false);
 		task1.execute();
-		
 
 	}
 
+	/**
+	 * To get the current location on application load
+	 * 
+	 * @return the address
+	 */
 	public void getAddress() {
+
+		// Check whether GPS and internet are available
 
 		if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
 			mainLayout.setVisibility(View.GONE);
@@ -406,6 +559,7 @@ OnItemClickListener {
 			mainLayout.setVisibility(View.GONE);
 			buildAlertMessageNoInternet();
 		} else {
+
 			tempProgress.show();
 			Location location = locationManager
 					.getLastKnownLocation(LocationManager.GPS_PROVIDER);
@@ -420,29 +574,62 @@ OnItemClickListener {
 
 	}
 
+	/**
+	 * The Class WeatherNearbyTask handles the API call and displays the weather
+	 * info in the near by locations to the current place / selected place.
+	 */
 	private class WeatherNearbyTask extends AsyncTask<Void, String, String> {
-		private String LAT_LONG_URL = "http://api.openweathermap.org/data/2.5/find?";
-		private String CONT_URL = "&cnt=5&mode=json";
+
+		/** The latitude. */
 		private double latitude;
+
+		/** The longitude. */
 		private double longitude;
 
+		/**
+		 * Gets the latitude.
+		 * 
+		 * @return the latitude
+		 */
 		public double getLatitude() {
 			return latitude;
 		}
 
+		/**
+		 * Sets the latitude.
+		 * 
+		 * @param latitude
+		 *            the new latitude
+		 */
 		public void setLatitude(double latitude) {
 			this.latitude = latitude;
 		}
 
+		/**
+		 * Gets the longitude.
+		 * 
+		 * @return the longitude
+		 */
 		public double getLongitude() {
 			return longitude;
 		}
 
+		/**
+		 * Sets the longitude.
+		 * 
+		 * @param longitude
+		 *            the new longitude
+		 */
 		public void setLongitude(double longitude) {
 			this.longitude = longitude;
 		}
 
+		/**
+		 * Sets the nearby view.
+		 */
 		private void setNearbyView() {
+
+			// report of the 4 nearby places
 
 			final Report report1 = nearbyReport.get(1);
 			final Report report2 = nearbyReport.get(2);
@@ -453,6 +640,8 @@ OnItemClickListener {
 			LinearLayout nearby2 = (LinearLayout) findViewById(R.id.nearby2);
 			LinearLayout nearby3 = (LinearLayout) findViewById(R.id.nearby3);
 			LinearLayout nearby4 = (LinearLayout) findViewById(R.id.nearby4);
+
+			// listener for the first nearby location
 
 			nearby1.setOnClickListener(new View.OnClickListener() {
 
@@ -480,6 +669,8 @@ OnItemClickListener {
 				}
 			});
 
+			// listener for the second nearby location
+
 			nearby2.setOnClickListener(new View.OnClickListener() {
 
 				@Override
@@ -506,6 +697,8 @@ OnItemClickListener {
 				}
 			});
 
+			// listener for the third nearby location
+
 			nearby3.setOnClickListener(new View.OnClickListener() {
 
 				@Override
@@ -531,6 +724,8 @@ OnItemClickListener {
 
 				}
 			});
+
+			// listener for the fourth nearby location
 
 			nearby4.setOnClickListener(new View.OnClickListener() {
 
@@ -588,6 +783,8 @@ OnItemClickListener {
 			TextView wind3 = (TextView) findViewById(R.id.wind3);
 			TextView wind4 = (TextView) findViewById(R.id.wind4);
 
+			// trimming the city name if it is more than 9 characters
+
 			if (report1.getCityName().length() > 9) {
 				city1.setText(report1.getCityName().subSequence(0, 10));
 
@@ -612,93 +809,131 @@ OnItemClickListener {
 			} else
 				city4.setText(report4.getCityName());
 
+			// calculate the distance of the nearby place with respect to the
+			// current location
+
 			double distance = calculateDistance(report.getLongitude(),
 					report.getLatitude(), report1.getLongitude(),
-					report1.getLatitude()) * 0.000621371;
+					report1.getLatitude())
+					* Constants.MILES_CONVERSION;
 
-			distance1.setText(String.valueOf(distance).substring(0, 3) + "mi");
+			distance1.setText(String.valueOf(distance).substring(0, 3)
+					+ Constants.MILES);
 
 			distance = calculateDistance(report.getLongitude(),
 					report.getLatitude(), report2.getLongitude(),
-					report2.getLatitude()) * 0.000621371;
+					report2.getLatitude())
+					* Constants.MILES_CONVERSION;
 
-			distance2.setText(String.valueOf(distance).substring(0, 3) + "mi");
+			distance2.setText(String.valueOf(distance).substring(0, 3)
+					+ Constants.MILES);
 
 			distance = calculateDistance(report.getLongitude(),
 					report.getLatitude(), report3.getLongitude(),
-					report3.getLatitude()) * 0.000621371;
+					report3.getLatitude())
+					* Constants.MILES_CONVERSION;
 
-			distance3.setText(String.valueOf(distance).substring(0, 3) + "mi");
+			distance3.setText(String.valueOf(distance).substring(0, 3)
+					+ Constants.MILES);
 
 			distance = calculateDistance(report.getLongitude(),
 					report.getLatitude(), report4.getLongitude(),
-					report4.getLatitude()) * 0.000621371;
+					report4.getLatitude())
+					* Constants.MILES_CONVERSION;
 
-			distance4.setText(String.valueOf(distance).substring(0, 3) + "mi");
+			distance4.setText(String.valueOf(distance).substring(0, 3)
+					+ Constants.MILES);
+
+			// setting weather icon for each place
 
 			icon1.setBackgroundResource(iconMap.get(report1.getIconId()));
 			icon2.setBackgroundResource(iconMap.get(report2.getIconId()));
 			icon3.setBackgroundResource(iconMap.get(report3.getIconId()));
 			icon4.setBackgroundResource(iconMap.get(report4.getIconId()));
 
+			// setting the temperature details for each nearby location
+
 			int temp12 = 0;
-			if (temperatureIcon.getContentDescription().equals("Celcius")) {
-				temp12 = (int) (report1.getTemp() - 273.15);
+			if (temperatureIcon.getContentDescription().equals(
+					Constants.CELCIUS)) {
+				temp12 = (int) (report1.getTemp() - Constants.KELVIN_CONVERSION);
 
 			} else {
-				temp12 = (int) (report1.getTemp() - 273.15) * (9 / 5) + 32;
+				temp12 = (int) (report1.getTemp() - Constants.KELVIN_CONVERSION)
+						* (9 / 5) + 32;
 			}
 
 			temp1.setText(String.valueOf(temp12));
 
-			if (temperatureIcon.getContentDescription().equals("Celcius")) {
-				temp12 = (int) (report2.getTemp() - 273.15);
+			if (temperatureIcon.getContentDescription().equals(
+					Constants.FAHRENHEIT)) {
+				temp12 = (int) (report2.getTemp() - Constants.KELVIN_CONVERSION);
 
 			} else {
-				temp12 = (int) (report2.getTemp() - 273.15) * (9 / 5) + 32;
+				temp12 = (int) (report2.getTemp() - Constants.KELVIN_CONVERSION)
+						* (9 / 5) + 32;
 			}
 
 			temp2.setText(String.valueOf(temp12));
 
-			if (temperatureIcon.getContentDescription().equals("Celcius")) {
-				temp12 = (int) (report3.getTemp() - 273.15);
+			if (temperatureIcon.getContentDescription().equals(
+					Constants.CELCIUS)) {
+				temp12 = (int) (report3.getTemp() - Constants.KELVIN_CONVERSION);
 
 			} else {
-				temp12 = (int) (report3.getTemp() - 273.15) * (9 / 5) + 32;
+				temp12 = (int) (report3.getTemp() - Constants.KELVIN_CONVERSION)
+						* (9 / 5) + 32;
 			}
 
 			temp3.setText(String.valueOf(temp12));
 
-			if (temperatureIcon.getContentDescription().equals("Celcius")) {
-				temp12 = (int) (report4.getTemp() - 273.15);
+			if (temperatureIcon.getContentDescription().equals(
+					Constants.CELCIUS)) {
+				temp12 = (int) (report4.getTemp() - Constants.KELVIN_CONVERSION);
 
 			} else {
-				temp12 = (int) (report4.getTemp() - 273.15) * (9 / 5) + 32;
+				temp12 = (int) (report4.getTemp() - Constants.KELVIN_CONVERSION)
+						* (9 / 5) + 32;
 			}
 
 			temp4.setText(String.valueOf(temp12));
 
-			humid1.setText("Humid: " + report1.getHumidity() + "%");
-			humid2.setText("Humid: " + report2.getHumidity() + "%");
-			humid3.setText("Humid: " + report3.getHumidity() + "%");
-			humid4.setText("Humid: " + report4.getHumidity() + "%");
+			// setting humidity and wind details extracted from the report
 
-			wind1.setText("Wind: " + report1.getWindSpeed() + "mps");
-			wind2.setText("Wind: " + report2.getWindSpeed() + "mps");
-			wind3.setText("Wind: " + report3.getWindSpeed() + "mps");
-			wind4.setText("Wind: " + report4.getWindSpeed() + "mps");
+			humid1.setText("Humid: " + report1.getHumidity()
+					+ Constants.PERCENT);
+			humid2.setText("Humid: " + report2.getHumidity()
+					+ Constants.PERCENT);
+			humid3.setText("Humid: " + report3.getHumidity()
+					+ Constants.PERCENT);
+			humid4.setText("Humid: " + report4.getHumidity()
+					+ Constants.PERCENT);
+
+			wind1.setText("Wind: " + report1.getWindSpeed()
+					+ Constants.MILES_PER_SECOND);
+			wind2.setText("Wind: " + report2.getWindSpeed()
+					+ Constants.MILES_PER_SECOND);
+			wind3.setText("Wind: " + report3.getWindSpeed()
+					+ Constants.MILES_PER_SECOND);
+			wind4.setText("Wind: " + report4.getWindSpeed()
+					+ Constants.MILES_PER_SECOND);
 
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
 		@Override
 		protected String doInBackground(Void... params) {
 			HttpURLConnection con = null;
 			InputStream is = null;
 			try {
 
-				con = (HttpURLConnection) (new URL(LAT_LONG_URL + "lat="
-						+ getLatitude() + "&lon=" + getLongitude() + CONT_URL))
-						.openConnection();
+				con = (HttpURLConnection) (new URL(Constants.LAT_LONG_URL
+						+ "lat=" + getLatitude() + "&lon=" + getLongitude()
+						+ Constants.CONT_URL)).openConnection();
 
 				con.setRequestMethod("GET");
 				con.setDoInput(true);
@@ -718,46 +953,47 @@ OnItemClickListener {
 				String jsonObject = buffer.toString();
 				JsonParser parser = new JsonParser();
 				JsonElement root = parser.parse(jsonObject).getAsJsonObject()
-						.get("list").getAsJsonArray();
+						.get(Constants.LIST).getAsJsonArray();
 
 				nearbyReport.clear();
+				// extracting info from the JSON
 				for (int i = 0; i < 5; i++) {
 					Report rep = new Report();
 
 					JsonElement currentObject = root.getAsJsonArray().get(i);
 
 					JsonElement coord = currentObject.getAsJsonObject().get(
-							"coord");
+							Constants.COORD);
 
-					rep.setLatitude(coord.getAsJsonObject().get("lat")
+					rep.setLatitude(coord.getAsJsonObject().get(Constants.LAT)
 							.getAsDouble());
-					rep.setLongitude(coord.getAsJsonObject().get("lon")
-							.getAsDouble());
+					rep.setLongitude(coord.getAsJsonObject()
+							.get(Constants.LONG).getAsDouble());
 
 					JsonArray weather = currentObject.getAsJsonObject()
-							.get("weather").getAsJsonArray();
+							.get(Constants.WEATHER).getAsJsonArray();
 
-					rep.setCityName(currentObject.getAsJsonObject().get("name")
-							.getAsString());
-					rep.setIconId(weather.get(0).getAsJsonObject().get("icon")
-							.getAsString());
+					rep.setCityName(currentObject.getAsJsonObject()
+							.get(Constants.NAME).getAsString());
+					rep.setIconId(weather.get(0).getAsJsonObject()
+							.get(Constants.ICON).getAsString());
 
 					JsonElement main = currentObject.getAsJsonObject().get(
-							"main");
+							Constants.MAIN);
 
-					rep.setTemp(main.getAsJsonObject().get("temp")
+					rep.setTemp(main.getAsJsonObject().get(Constants.TEMP)
 							.getAsDouble());
-					rep.setHumidity(main.getAsJsonObject().get("humidity")
-							.getAsDouble());
+					rep.setHumidity(main.getAsJsonObject()
+							.get(Constants.HUMIDITY).getAsDouble());
 					JsonElement wind = currentObject.getAsJsonObject().get(
-							"wind");
+							Constants.WIND);
 
-					rep.setWindSpeed(wind.getAsJsonObject().get("speed")
-							.getAsDouble());
+					rep.setWindSpeed(wind.getAsJsonObject()
+							.get(Constants.SPEED).getAsDouble());
 					JsonElement clouds = currentObject.getAsJsonObject().get(
-							"clouds");
+							Constants.CLOUDS);
 
-					rep.setClouds(clouds.getAsJsonObject().get("all")
+					rep.setClouds(clouds.getAsJsonObject().get(Constants.ALL)
 							.getAsDouble());
 
 					nearbyReport.add(i, rep);
@@ -783,7 +1019,7 @@ OnItemClickListener {
 					@Override
 					public void run() {
 						Toast.makeText(mainContext,
-								"Nearby Weather info unavailable",
+								Constants.TOAST_NEARBY_UNAVAILABLE,
 								Toast.LENGTH_LONG).show();
 					}
 				});
@@ -802,9 +1038,13 @@ OnItemClickListener {
 			return null;
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
 		@Override
 		protected void onPostExecute(String result) {
-			// TODO Auto-generated method stub
 			super.onPostExecute(result);
 			nearbyComplete = true;
 			activity.runOnUiThread(new Runnable() {
@@ -820,54 +1060,116 @@ OnItemClickListener {
 
 	}
 
+	/**
+	 * The Class ForecastTask is to call the openweather API and update the
+	 * forecast info for the currently selected city.
+	 */
 	private class ForecastTask extends AsyncTask<Void, String, String> {
-		private String city;
-		private String state;
-		private boolean isFirstSearch;
-		private double latitude;
-		private double longitude;
-		private String BASE_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?q=";
-		private String LAT_LONG_URL = "http://api.openweathermap.org/data/2.5/forecast/daily?";
-		private String CONT_URL = "&cnt=10&mode=json";
 
+		/** The city. */
+		private String city;
+
+		/** The state. */
+		private String state;
+
+		/** The is first search. */
+		private boolean isFirstSearch;
+
+		/** The latitude. */
+		private double latitude;
+
+		/** The longitude. */
+		private double longitude;
+
+		/**
+		 * Gets the latitude.
+		 * 
+		 * @return the latitude
+		 */
 		public double getLatitude() {
 			return latitude;
 		}
 
+		/**
+		 * Sets the latitude.
+		 * 
+		 * @param latitude
+		 *            the new latitude
+		 */
 		public void setLatitude(double latitude) {
 			this.latitude = latitude;
 		}
 
+		/**
+		 * Gets the longitude.
+		 * 
+		 * @return the longitude
+		 */
 		public double getLongitude() {
 			return longitude;
 		}
 
+		/**
+		 * Sets the longitude.
+		 * 
+		 * @param longitude
+		 *            the new longitude
+		 */
 		public void setLongitude(double longitude) {
 			this.longitude = longitude;
 		}
 
+		/**
+		 * Gets the city.
+		 * 
+		 * @return the city
+		 */
 		public String getCity() {
 			return city;
 		}
 
+		/**
+		 * Sets the city.
+		 * 
+		 * @param city
+		 *            the new city
+		 */
 		public void setCity(String city) {
 			this.city = city;
 		}
 
+		/**
+		 * Gets the state.
+		 * 
+		 * @return the state
+		 */
 		public String getState() {
 			return state;
 		}
 
+		/**
+		 * Sets the state.
+		 * 
+		 * @param state
+		 *            the new state
+		 */
 		public void setState(String state) {
 			this.state = state;
 		}
 
-		
-
+		/**
+		 * Sets the if is the first search.
+		 * 
+		 * @param isFirstSearch
+		 *            the new checks if is first search
+		 */
 		public void setIsFirstSearch(boolean isFirstSearch) {
 			this.isFirstSearch = isFirstSearch;
 		}
 
+		/**
+		 * Sets the forecast view with the forecast for next 10 days.
+		 */
 		private void setForecastView() {
 			LinearLayout hsv = (LinearLayout) findViewById(R.id.forecastView);
 			hsv.removeAllViews();
@@ -883,6 +1185,8 @@ OnItemClickListener {
 				parentLayout.setId(i);
 				parentLayout.setWeightSum(7);
 
+				// Sets the forecast month and day in MMM, DD format
+
 				TextView day = new TextView(mainContext);
 				day.setText(currentReport.getMonth() + " "
 						+ currentReport.getDay());
@@ -894,6 +1198,8 @@ OnItemClickListener {
 				day.setLayoutParams(dayParams);
 
 				parentLayout.addView(day);
+
+				// Sets the weather icon for that particular day
 
 				ImageView icon = new ImageView(mainContext);
 				LinearLayout.LayoutParams iconParams = new LinearLayout.LayoutParams(
@@ -908,20 +1214,24 @@ OnItemClickListener {
 
 				parentLayout.addView(icon);
 
+				// Sets the temerature prediction
+
 				TextView temp = new TextView(mainContext);
 				int minTemp = 0, maxTemp = 0;
-				if (temperatureIcon.getContentDescription().equals("Celcius")) {
-					minTemp = (int) (currentReport.getMinTemp() - 273.15);
-					maxTemp = (int) (currentReport.getMaxTemp() - 273.15);
+				if (temperatureIcon.getContentDescription().equals(
+						Constants.CELCIUS)) {
+					minTemp = (int) (currentReport.getMinTemp() - Constants.KELVIN_CONVERSION);
+					maxTemp = (int) (currentReport.getMaxTemp() - Constants.KELVIN_CONVERSION);
 				} else {
-					minTemp = (int) (currentReport.getMinTemp() - 273.15)
+					minTemp = (int) (currentReport.getMinTemp() - Constants.KELVIN_CONVERSION)
 							* (9 / 5) + 32;
-					maxTemp = (int) (currentReport.getMaxTemp() - 273.15)
+					maxTemp = (int) (currentReport.getMaxTemp() - Constants.KELVIN_CONVERSION)
 							* (9 / 5) + 32;
 
 				}
 				temp.setGravity(Gravity.CENTER);
-				temp.setText(maxTemp + "\u00b0        " + minTemp + "\u00b0");
+				temp.setText(maxTemp + Constants.DEGREE + "        " + minTemp
+						+ Constants.DEGREE);
 				LinearLayout.LayoutParams tempTextParams = new LinearLayout.LayoutParams(
 						LayoutParams.MATCH_PARENT, 0, 2);
 				temp.setTextSize(14);
@@ -935,6 +1245,11 @@ OnItemClickListener {
 			}
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
 		@Override
 		protected String doInBackground(Void... arg0) {
 			HttpURLConnection con = null;
@@ -942,13 +1257,16 @@ OnItemClickListener {
 			try {
 
 				if (isFirstSearch) {
-					con = (HttpURLConnection) (new URL(LAT_LONG_URL + "lat="
-							+ getLatitude() + "&lon=" + getLongitude()
-							+ CONT_URL)).openConnection();
+					con = (HttpURLConnection) (new URL(
+							Constants.LAT_LONG_URL_FORECAST + "lat="
+									+ getLatitude() + "&lon=" + getLongitude()
+									+ Constants.CONT_URL_FOREACST))
+							.openConnection();
 
 				} else {
-					con = (HttpURLConnection) (new URL(BASE_URL + getCity()
-							+ "," + getState() + CONT_URL)).openConnection();
+					con = (HttpURLConnection) (new URL(Constants.BASE_URL
+							+ getCity() + Constants.COMMA_SPLITTER + getState()
+							+ Constants.CONT_URL_FOREACST)).openConnection();
 				}
 				con.setRequestMethod("GET");
 				con.setDoInput(true);
@@ -968,40 +1286,43 @@ OnItemClickListener {
 				String jsonObject = buffer.toString();
 				JsonParser parser = new JsonParser();
 				JsonElement root = parser.parse(jsonObject).getAsJsonObject()
-						.get("list").getAsJsonArray();
-				int cnt = parser.parse(jsonObject).getAsJsonObject().get("cnt")
-						.getAsInt();
+						.get(Constants.LIST).getAsJsonArray();
+				int cnt = parser.parse(jsonObject).getAsJsonObject()
+						.get(Constants.CNT).getAsInt();
 				forecastReport.clear();
+
+				// extracting info from the JSON
 				for (int i = 0; i < cnt; i++) {
 					JsonElement currentObject = root.getAsJsonArray().get(i);
 					JsonArray weather = currentObject.getAsJsonObject()
-							.get("weather").getAsJsonArray();
+							.get(Constants.WEATHER).getAsJsonArray();
 					Report rep = new Report();
 
 					rep.setDescription(weather.get(0).getAsJsonObject()
-							.get("description").getAsString());
-					rep.setIconId(weather.get(0).getAsJsonObject().get("icon")
-							.getAsString());
+							.get(Constants.DESCRIPTION).getAsString());
+					rep.setIconId(weather.get(0).getAsJsonObject()
+							.get(Constants.ICON).getAsString());
 
 					JsonElement main = currentObject.getAsJsonObject().get(
-							"temp");
+							Constants.TEMP);
 
-					rep.setMinTemp(main.getAsJsonObject().get("min")
+					rep.setMinTemp(main.getAsJsonObject().get(Constants.MIN)
 							.getAsDouble());
-					rep.setMaxTemp(main.getAsJsonObject().get("max")
+					rep.setMaxTemp(main.getAsJsonObject().get(Constants.MAX)
 							.getAsDouble());
-					rep.setTemp(main.getAsJsonObject().get("day").getAsDouble());
+					rep.setTemp(main.getAsJsonObject().get(Constants.DAY)
+							.getAsDouble());
 					rep.setHumidity(currentObject.getAsJsonObject()
-							.get("humidity").getAsDouble());
+							.get(Constants.HUMIDITY).getAsDouble());
 
 					rep.setWindSpeed(currentObject.getAsJsonObject()
-							.get("speed").getAsDouble());
-					rep.setClouds(currentObject.getAsJsonObject().get("clouds")
-							.getAsDouble());
+							.get(Constants.SPEED).getAsDouble());
+					rep.setClouds(currentObject.getAsJsonObject()
+							.get(Constants.CLOUDS).getAsDouble());
 
 					Date newDate = DateUtil.addDays(cal.getTime(), i + 1);
 					rep.setDay(Integer.parseInt(new SimpleDateFormat("dd")
-					.format(newDate)));
+							.format(newDate)));
 					rep.setMonth(new SimpleDateFormat("MMM").format(newDate));
 
 					forecastReport.add(i, rep);
@@ -1021,9 +1342,8 @@ OnItemClickListener {
 					@Override
 					public void run() {
 						Toast.makeText(mainContext,
-								"Forecast Weather info unavailable",
+								Constants.TOAST_FORECAST_UNAVAILABLE,
 								Toast.LENGTH_LONG).show();
-						// forecastProgress.setVisibility(View.GONE);
 					}
 				});
 				t.printStackTrace();
@@ -1041,6 +1361,11 @@ OnItemClickListener {
 
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
 		@Override
 		protected void onPostExecute(String result) {
 			// TODO Auto-generated method stub
@@ -1058,83 +1383,161 @@ OnItemClickListener {
 
 	}
 
+	/**
+	 * The Class WeatherTask is to call openweather API and display the weather
+	 * information.
+	 */
 	private class WeatherTask extends AsyncTask<Void, String, String> {
-		private String BASE_URL = "http://api.openweathermap.org/data/2.5/weather?q=";
-		private String LAT_LONG_URL = "http://api.openweathermap.org/data/2.5/find?";
+
+		/** The city. */
 		private String city;
+
+		/** The state. */
 		private String state;
+
+		/** The latitude. */
 		private double latitude;
+
+		/** The longitude. */
 		private double longitude;
+
+		/** The is first search. */
 		private boolean isFirstSearch;
 
-		
-
+		/**
+		 * Sets the first search.
+		 * 
+		 * @param isFirstSearch
+		 *            the new first search
+		 */
 		public void setFirstSearch(boolean isFirstSearch) {
 			this.isFirstSearch = isFirstSearch;
 		}
 
+		/**
+		 * Gets the latitude.
+		 * 
+		 * @return the latitude
+		 */
 		public double getLatitude() {
 			return latitude;
 		}
 
+		/**
+		 * Sets the latitude.
+		 * 
+		 * @param latitude
+		 *            the new latitude
+		 */
 		public void setLatitude(double latitude) {
 			this.latitude = latitude;
 		}
 
+		/**
+		 * Gets the longitude.
+		 * 
+		 * @return the longitude
+		 */
 		public double getLongitude() {
 			return longitude;
 		}
 
+		/**
+		 * Sets the longitude.
+		 * 
+		 * @param longitude
+		 *            the new longitude
+		 */
 		public void setLongitude(double longitude) {
 			this.longitude = longitude;
 		}
 
+		/**
+		 * Gets the city.
+		 * 
+		 * @return the city
+		 */
 		public String getCity() {
 			return city;
 		}
 
+		/**
+		 * Sets the city.
+		 * 
+		 * @param city
+		 *            the new city
+		 */
 		public void setCity(String city) {
 			this.city = city;
 		}
 
+		/**
+		 * Gets the state.
+		 * 
+		 * @return the state
+		 */
 		public String getState() {
 			return state;
 		}
 
+		/**
+		 * Sets the state.
+		 * 
+		 * @param state
+		 *            the new state
+		 */
 		public void setState(String state) {
 			this.state = state;
 		}
 
+		/**
+		 * Sets the weather view for the currently selected city.
+		 */
 		public void setWeatherView() {
-			if(!isFirstSearch)
-			{
-			activity.city.setText(strArray[0]);
-			state_country.setText(strArray[1] + "," + strArray[2]);
+			// sets the city and state details
+			if (!isFirstSearch) {
+				activity.city.setText(strArray[0]);
+				state_country.setText(strArray[1] + Constants.COMMA_SPLITTER
+						+ strArray[2]);
 			}
+			// sets the weather info
 			prediction.setText(report.getDescription());
 			predictionIcon
-			.setBackgroundResource(iconMap.get(report.getIconId()));
+					.setBackgroundResource(iconMap.get(report.getIconId()));
 			date.setText(report.getMonth() + " " + report.getDay());
 			mainLayout.setBackgroundResource(bgMap.get(report.getIconId()));
 
+			// sets the temperature details - current, minimum and maximum
 			int minTemp = 0, maxTemp = 0, temp1 = 0;
-			if (temperatureIcon.getContentDescription().equals("Celcius")) {
-				minTemp = (int) (report.getMinTemp() - 273.15);
-				maxTemp = (int) (report.getMaxTemp() - 273.15);
-				temp1 = (int) (report.getTemp() - 273.15);
+			if (temperatureIcon.getContentDescription().equals(
+					Constants.CELCIUS)) {
+				minTemp = (int) (report.getMinTemp() - Constants.KELVIN_CONVERSION);
+				maxTemp = (int) (report.getMaxTemp() - Constants.KELVIN_CONVERSION);
+				temp1 = (int) (report.getTemp() - Constants.KELVIN_CONVERSION);
 			} else {
-				minTemp = (int) (report.getMinTemp() - 273.15) * (9 / 5) + 32;
-				maxTemp = (int) (report.getMaxTemp() - 273.15) * (9 / 5) + 32;
-				temp1 = (int) (report.getTemp() - 273.15) * (9 / 5) + 32;
+				minTemp = (int) (report.getMinTemp() - Constants.KELVIN_CONVERSION)
+						* (9 / 5) + 32;
+				maxTemp = (int) (report.getMaxTemp() - Constants.KELVIN_CONVERSION)
+						* (9 / 5) + 32;
+				temp1 = (int) (report.getTemp() - Constants.KELVIN_CONVERSION)
+						* (9 / 5) + 32;
 			}
-			minMaxtemp.setText(minTemp + "\u00b0     " + maxTemp + "\u00b0");
+			minMaxtemp.setText(minTemp + Constants.DEGREE + "    " + maxTemp
+					+ Constants.DEGREE);
 			temp.setText(String.valueOf(temp1));
 
-			humidity.setText(report.getHumidity() + "%");
-			cloudPercent.setText(report.getClouds() + "%");
-			windSpeed.setText(report.getWindSpeed() + "mps");
+			// sets the humidity, clouds and wind speed
+			humidity.setText(report.getHumidity() + Constants.PERCENT);
+			cloudPercent.setText(report.getClouds() + Constants.PERCENT);
+			windSpeed.setText(report.getWindSpeed()
+					+ Constants.MILES_PER_SECOND);
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
 		@Override
 		protected String doInBackground(Void... arg0) {
 			HttpURLConnection con = null;
@@ -1142,13 +1545,15 @@ OnItemClickListener {
 
 			try {
 				if (isFirstSearch) {
-					con = (HttpURLConnection) (new URL(LAT_LONG_URL + "lat="
-							+ getLatitude() + "&lon=" + getLongitude()))
+					con = (HttpURLConnection) (new URL(Constants.LAT_LONG_URL
+							+ "lat=" + getLatitude() + "&lon=" + getLongitude()))
 							.openConnection();
 
 				} else {
-					con = (HttpURLConnection) (new URL(BASE_URL + getCity()
-							+ "," + getState())).openConnection();
+					con = (HttpURLConnection) (new URL(
+							Constants.BASE_URL_WEATHER + getCity()
+									+ Constants.COMMA_SPLITTER + getState()))
+							.openConnection();
 				}
 				con.setRequestMethod("GET");
 				con.setDoInput(true);
@@ -1169,15 +1574,19 @@ OnItemClickListener {
 				JsonParser parser = new JsonParser();
 				JsonElement root = null;
 
+				// extract the JSON info
+
 				if (isFirstSearch) {
 					root = parser.parse(jsonObject).getAsJsonObject()
-							.get("list").getAsJsonArray().get(0);
+							.get(Constants.LIST).getAsJsonArray().get(0);
 
 				} else {
 					root = parser.parse(jsonObject);
-					JsonElement coord = root.getAsJsonObject().get("coord");
-					latitude = coord.getAsJsonObject().get("lat").getAsDouble();
-					longitude = coord.getAsJsonObject().get("lon")
+					JsonElement coord = root.getAsJsonObject().get(
+							Constants.COORD);
+					latitude = coord.getAsJsonObject().get(Constants.LAT)
+							.getAsDouble();
+					longitude = coord.getAsJsonObject().get(Constants.LONG)
 							.getAsDouble();
 					WeatherNearbyTask task = new WeatherNearbyTask();
 					task.setLatitude(latitude);
@@ -1188,36 +1597,38 @@ OnItemClickListener {
 				}
 				report.setLatitude(latitude);
 				report.setLongitude(longitude);
-				JsonArray weather = root.getAsJsonObject().get("weather")
-						.getAsJsonArray();
+				JsonArray weather = root.getAsJsonObject()
+						.get(Constants.WEATHER).getAsJsonArray();
 
 				report.setDescription(weather.get(0).getAsJsonObject()
-						.get("description").getAsString());
-				report.setIconId(weather.get(0).getAsJsonObject().get("icon")
-						.getAsString());
+						.get(Constants.DESCRIPTION).getAsString());
+				report.setIconId(weather.get(0).getAsJsonObject()
+						.get(Constants.ICON).getAsString());
 
-				JsonElement main = root.getAsJsonObject().get("main");
+				JsonElement main = root.getAsJsonObject().get(Constants.MAIN);
 
-				report.setMinTemp(main.getAsJsonObject().get("temp_min")
+				report.setMinTemp(main.getAsJsonObject()
+						.get(Constants.TEMP_MIN).getAsDouble());
+				report.setMaxTemp(main.getAsJsonObject()
+						.get(Constants.TEMP_MAX).getAsDouble());
+				report.setTemp(main.getAsJsonObject().get(Constants.TEMP)
 						.getAsDouble());
-				report.setMaxTemp(main.getAsJsonObject().get("temp_max")
-						.getAsDouble());
-				report.setTemp(main.getAsJsonObject().get("temp").getAsDouble());
-				report.setHumidity(main.getAsJsonObject().get("humidity")
-						.getAsDouble());
-				JsonElement wind = root.getAsJsonObject().get("wind");
+				report.setHumidity(main.getAsJsonObject()
+						.get(Constants.HUMIDITY).getAsDouble());
+				JsonElement wind = root.getAsJsonObject().get(Constants.WIND);
 
-				report.setWindSpeed(wind.getAsJsonObject().get("speed")
+				report.setWindSpeed(wind.getAsJsonObject().get(Constants.SPEED)
 						.getAsDouble());
-				JsonElement clouds = root.getAsJsonObject().get("clouds");
+				JsonElement clouds = root.getAsJsonObject().get(
+						Constants.CLOUDS);
 
-				report.setClouds(clouds.getAsJsonObject().get("all")
+				report.setClouds(clouds.getAsJsonObject().get(Constants.ALL)
 						.getAsDouble());
 
 				report.setMonth(new SimpleDateFormat("MMM").format(cal
 						.getTime()));
 				report.setDay(Integer.parseInt(new SimpleDateFormat("dd")
-				.format(cal.getTime())));
+						.format(cal.getTime())));
 				activity.runOnUiThread(new Runnable() {
 
 					@Override
@@ -1233,7 +1644,7 @@ OnItemClickListener {
 					@Override
 					public void run() {
 						Toast.makeText(mainContext,
-								"Weather details unavailable",
+								Constants.TOAST_WEATHER_UNAVAILABLE,
 								Toast.LENGTH_LONG).show();
 						// tempProgress.setVisibility(View.GONE);
 					}
@@ -1255,18 +1666,21 @@ OnItemClickListener {
 
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
 		@Override
 		protected void onPostExecute(String result) {
-			// TODO Auto-generated method stub
 			super.onPostExecute(result);
 			weatherComplete = true;
 			activity.runOnUiThread(new Runnable() {
 
 				@Override
 				public void run() {
-					// tempProgress.setVisibility(View.GONE);
 					titleBar.setVisibility(View.VISIBLE);
-					
+
 					tempDetails.setVisibility(View.VISIBLE);
 					tempProgress.dismiss();
 				}
@@ -1274,9 +1688,13 @@ OnItemClickListener {
 
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPreExecute()
+		 */
 		@Override
 		protected void onPreExecute() {
-			// TODO Auto-generated method stub
 			super.onPreExecute();
 
 			tempProgress.show();
@@ -1285,6 +1703,19 @@ OnItemClickListener {
 
 	}
 
+	/**
+	 * Calculates distance between 2 given locations
+	 * 
+	 * @param fromLong
+	 *            the from long
+	 * @param fromLat
+	 *            the from lat
+	 * @param toLong
+	 *            the to long
+	 * @param toLat
+	 *            the to lat
+	 * @return the double
+	 */
 	private double calculateDistance(double fromLong, double fromLat,
 			double toLong, double toLat) {
 		double d2r = Math.PI / 180;
@@ -1297,52 +1728,68 @@ OnItemClickListener {
 		return Math.round(d);
 	}
 
+	/**
+	 * Builds the alert message to show when the GPS is turned off.
+	 */
 	private void buildAlertMessageNoGps() {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage(
-				"Your GPS seems to be disabled, do you want to enable it?")
+		builder.setMessage(Constants.GPS_OFF_MSG)
 				.setCancelable(false)
-				.setPositiveButton("Yes",
+				.setPositiveButton(Constants.YES,
 						new DialogInterface.OnClickListener() {
-					public void onClick(
-							final DialogInterface dialog,
-							 final int id) {
-						startActivity(new Intent(
-								android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-						activity.finish();
-					}
-				})
-				.setNegativeButton("No", new DialogInterface.OnClickListener() {
-					public void onClick(final DialogInterface dialog,
-							 final int id) {
-						dialog.cancel();
-						activity.finish();
-					}
-				});
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+								startActivity(new Intent(
+										android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+								activity.finish();
+							}
+						})
+				.setNegativeButton(Constants.NO,
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+								dialog.cancel();
+								activity.finish();
+							}
+						});
 		final AlertDialog alert = builder.create();
 		alert.show();
 	}
 
+	/**
+	 * Builds the alert message and shows when the internet connection is not
+	 * available.
+	 */
 	private void buildAlertMessageNoInternet() {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage("Please check you network connection")
-		.setCancelable(false)
-		.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-			public void onClick(
-					 final DialogInterface dialog,
-					final int id) {
-				activity.finish();
-			}
-		});
+		builder.setMessage(Constants.INTERNET_OFF_MSG)
+				.setCancelable(false)
+				.setPositiveButton(Constants.OK,
+						new DialogInterface.OnClickListener() {
+							public void onClick(final DialogInterface dialog,
+									final int id) {
+								activity.finish();
+							}
+						});
 		final AlertDialog alert = builder.create();
 		alert.show();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.support.v4.app.FragmentActivity#onResume()
+	 */
 	@Override
 	protected void onResume() {
 		super.onResume();
 	}
 
+	/**
+	 * Checks if internet connection is available.
+	 * 
+	 * @return true, if is conn
+	 */
 	public boolean isConn() {
 		ConnectivityManager connectivity = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 		if (connectivity.getActiveNetworkInfo() != null) {
@@ -1352,8 +1799,25 @@ OnItemClickListener {
 		return false;
 	}
 
+	/**
+	 * The listener interface for receiving myLocation events. The class that is
+	 * interested in processing a myLocation event implements this interface,
+	 * and the object created with that class is registered with a component
+	 * using the component's <code>addMyLocationListener<code> method. When
+	 * the myLocation event occurs, that object's appropriate
+	 * method is invoked.
+	 * 
+	 * @see MyLocationEvent
+	 */
 	private class MyLocationListener implements LocationListener {
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * android.location.LocationListener#onLocationChanged(android.location
+		 * .Location)
+		 */
 		@Override
 		public void onLocationChanged(Location location) {
 
@@ -1363,37 +1827,69 @@ OnItemClickListener {
 
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * android.location.LocationListener#onProviderDisabled(java.lang.String
+		 * )
+		 */
 		@Override
 		public void onProviderDisabled(String provider) {
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * android.location.LocationListener#onProviderEnabled(java.lang.String)
+		 */
 		@Override
 		public void onProviderEnabled(String provider) {
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * android.location.LocationListener#onStatusChanged(java.lang.String,
+		 * int, android.os.Bundle)
+		 */
 		@Override
 		public void onStatusChanged(String provider, int status, Bundle extras) {
 		}
 	}
 
+	/**
+	 * Updates the city details.
+	 * 
+	 * @param city1
+	 *            the city1
+	 */
 	private void updateCity(String city1) {
 		city.setText(city1);
 		autoCompView.setText("");
 	}
 
+	/**
+	 * Update weather info on the display.
+	 * 
+	 * @param location
+	 *            the location
+	 */
 	private void updateWeatherInfo(Location location) {
 		Geocoder gcd = new Geocoder(MainActivity.this, Locale.getDefault());
 
 		List<Address> addresses;
-		autoCompView.setText("");
+		autoCompView.setText(Constants.EMPTY_STRING);
 		try {
 			addresses = gcd.getFromLocation(location.getLatitude(),
 					location.getLongitude(), 1);
 			if (addresses.size() > 0) {
 				Address current = addresses.get(0);
 				city.setText(current.getLocality());
-				state_country.setText(current.getAdminArea() + ","
-						+ current.getCountryCode());
+				state_country.setText(current.getAdminArea()
+						+ Constants.COMMA_SPLITTER + current.getCountryCode());
 			}
 
 		} catch (IOException e) {

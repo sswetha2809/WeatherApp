@@ -3,8 +3,20 @@ package com.example.weatherapplication;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * author: swetha
+ * The Class DateUtil.
+ */
 public class DateUtil
 {
+    
+    /**
+     * Adds the days.
+     *
+     * @param date the date
+     * @param days the days
+     * @return the date
+     */
     public static Date addDays(Date date, int days)
     {
         Calendar cal = Calendar.getInstance();
